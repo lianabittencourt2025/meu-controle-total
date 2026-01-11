@@ -35,12 +35,6 @@ export default function IncomePage() {
     }).format(value);
   };
 
-  // Group received by category
-  const byCategory = receivedIncomes.reduce((acc, income) => {
-    acc[income.category] = (acc[income.category] || 0) + income.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -56,7 +50,7 @@ export default function IncomePage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Total Recebido"
           value={totalReceived}
@@ -69,14 +63,6 @@ export default function IncomePage() {
           icon={Clock}
           variant="pending"
         />
-        {Object.entries(byCategory).slice(0, 2).map(([category, amount]) => (
-          <StatCard
-            key={category}
-            title={category}
-            value={amount}
-            variant="income"
-          />
-        ))}
       </div>
 
       {/* Income Table */}
