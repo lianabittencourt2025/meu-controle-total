@@ -2,14 +2,20 @@ import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { ExpenseForm } from "@/components/forms/ExpenseForm";
+import { MonthSelector } from "@/components/MonthSelector";
 import { TrendingDown, CheckCircle, Clock, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PersonalPage() {
-  const { getPersonalSummary, expenses } = useFinance();
+  const { 
+    getPersonalSummary, 
+    filteredExpenses,
+    selectedMonth,
+    setSelectedMonth
+  } = useFinance();
   
   const summary = getPersonalSummary();
-  const personalExpenses = expenses.filter(e => e.type === 'personal');
+  const personalExpenses = filteredExpenses.filter(e => e.type === 'personal');
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -19,7 +25,10 @@ export default function PersonalPage() {
           <h1 className="text-3xl font-display font-bold text-foreground">Pessoal</h1>
           <p className="text-muted-foreground mt-1">Suas despesas pessoais</p>
         </div>
-        <ExpenseForm type="personal" triggerLabel="Nova Despesa" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          <ExpenseForm type="personal" triggerLabel="Nova Despesa" />
+        </div>
       </div>
 
       {/* Stats */}
