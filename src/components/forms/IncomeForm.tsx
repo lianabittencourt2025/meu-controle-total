@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFinance } from "@/contexts/FinanceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
+import { Income } from "@/types/finance";
+import { format } from "date-fns";
 
 const categories = [
   "Serviços",
@@ -17,10 +19,12 @@ const categories = [
 
 interface IncomeFormProps {
   onSuccess?: () => void;
+  income?: Income; // For editing
+  editMode?: boolean;
 }
 
-export function IncomeForm({ onSuccess }: IncomeFormProps) {
-  const { addIncome, clients } = useFinance();
+export function IncomeForm({ onSuccess, income, editMode = false }: IncomeFormProps) {
+  const { addIncome, updateIncome, clients } = useFinance();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -28,38 +32,68 @@ export function IncomeForm({ onSuccess }: IncomeFormProps) {
   const [category, setCategory] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim() || !amount || !clientId || !category || !paymentDate) return;
+  // Populate form when editing
+  useEffect(() => {
+    if (income && editMode) {
+      setDescription(income.description);
+      setAmount(income.amount.toString());
+      setClientId(income.clientId);
+      setCategory(income.category);
+      setPaymentDate(format(new Date(income.paymentDate), 'yyyy-MM-dd'));
+    }
+  }, [income, editMode]);
 
-    addIncome({
-      description: description.trim(),
-      amount: parseFloat(amount),
-      clientId,
-      category,
-      paymentDate: new Date(paymentDate),
-    });
-
+  const resetForm = () => {
     setDescription("");
     setAmount("");
     setClientId("");
     setCategory("");
     setPaymentDate("");
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!description.trim() || !amount || !clientId || !category || !paymentDate) return;
+
+    const incomeData = {
+      description: description.trim(),
+      amount: parseFloat(amount),
+      clientId,
+      category,
+      paymentDate: new Date(paymentDate),
+    };
+
+    if (editMode && income) {
+      updateIncome(income.id, incomeData);
+    } else {
+      addIncome(incomeData);
+    }
+
+    resetForm();
     setOpen(false);
     onSuccess?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen && !editMode) resetForm();
+    }}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Recebimento
-        </Button>
+        {editMode ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Novo Recebimento
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Recebimento</DialogTitle>
+          <DialogTitle>{editMode ? 'Editar Recebimento' : 'Adicionar Recebimento'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -135,7 +169,7 @@ export function IncomeForm({ onSuccess }: IncomeFormProps) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit">{editMode ? 'Salvar' : 'Adicionar'}</Button>
           </div>
         </form>
       </DialogContent>

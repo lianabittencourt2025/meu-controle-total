@@ -3,7 +3,8 @@ import { Expense } from "@/types/finance";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ExpenseStatusEditor } from "./ExpenseStatusEditor";
-import { Trash2 } from "lucide-react";
+import { ExpenseForm } from "./forms/ExpenseForm";
+import { Trash2, Repeat } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -41,13 +42,23 @@ export function ExpenseTable({ expenses, showType = false }: ExpenseTableProps) 
             <TableHead>Vencimento</TableHead>
             <TableHead className="text-right">Valor</TableHead>
             <TableHead>Status / Fonte</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {expenses.map((expense) => (
             <TableRow key={expense.id} className="hover:bg-muted/30">
-              <TableCell className="font-medium">{expense.description}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  {expense.description}
+                  {expense.isFixed && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                      <Repeat className="w-3 h-3" />
+                      Fixa
+                    </span>
+                  )}
+                </div>
+              </TableCell>
               <TableCell>
                 <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-xs">
                   {expense.category}
@@ -76,14 +87,21 @@ export function ExpenseTable({ expenses, showType = false }: ExpenseTableProps) 
                 />
               </TableCell>
               <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  onClick={() => removeExpense(expense.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <ExpenseForm 
+                    type={expense.type} 
+                    expense={expense} 
+                    editMode={true} 
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeExpense(expense.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
