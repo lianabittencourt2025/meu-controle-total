@@ -3,23 +3,44 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { FinanceProvider } from "@/contexts/FinanceContext";
+import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
+import BusinessPage from "./pages/BusinessPage";
+import PersonalPage from "./pages/PersonalPage";
+import ClientsPage from "./pages/ClientsPage";
+import IncomePage from "./pages/IncomePage";
+import InvestmentsPage from "./pages/InvestmentsPage";
 import NotFound from "./pages/NotFound";
+import { cn } from "@/lib/utils";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <FinanceProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen flex w-full">
+            <AppSidebar />
+            <main className="flex-1 lg:ml-64 p-6 lg:p-8 pt-20 lg:pt-8">
+              <div className="max-w-7xl mx-auto">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/empresa" element={<BusinessPage />} />
+                  <Route path="/pessoal" element={<PersonalPage />} />
+                  <Route path="/clientes" element={<ClientsPage />} />
+                  <Route path="/recebimentos" element={<IncomePage />} />
+                  <Route path="/investimentos" element={<InvestmentsPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </main>
+          </div>
+        </BrowserRouter>
+      </FinanceProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

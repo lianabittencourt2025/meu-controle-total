@@ -1,0 +1,124 @@
+import { useFinance } from "@/contexts/FinanceContext";
+import { StatCard } from "@/components/StatCard";
+import { IncomeForm } from "@/components/forms/IncomeForm";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+export default function IncomePage() {
+  const { incomes, removeIncome, getClientById } = useFinance();
+
+  const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  // Group by category
+  const byCategory = incomes.reduce((acc, income) => {
+    acc[income.category] = (acc[income.category] || 0) + income.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Recebimentos</h1>
+          <p className="text-muted-foreground mt-1">Entradas de receita</p>
+        </div>
+        <IncomeForm />
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Recebido"
+          value={totalIncome}
+          icon={TrendingUp}
+          variant="income"
+        />
+        {Object.entries(byCategory).slice(0, 3).map(([category, amount]) => (
+          <StatCard
+            key={category}
+            title={category}
+            value={amount}
+            variant="income"
+          />
+        ))}
+      </div>
+
+      {/* Income Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Todos os Recebimentos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {incomes.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhum recebimento cadastrado
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {incomes.map((income) => {
+                    const client = getClientById(income.clientId);
+                    return (
+                      <TableRow key={income.id} className="hover:bg-muted/30">
+                        <TableCell className="font-medium">{income.description}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-income-light text-income text-xs font-medium">
+                            {client?.name || 'N/A'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-xs">
+                            {income.category}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(income.paymentDate), "dd/MM/yyyy", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-income">
+                          {formatCurrency(income.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeIncome(income.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
