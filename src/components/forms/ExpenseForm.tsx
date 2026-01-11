@@ -78,11 +78,15 @@ export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode =
     e.preventDefault();
     if (!description.trim() || !amount || !category || !dueDate) return;
 
+    // Parse date correctly to avoid timezone issues
+    const [year, month, day] = dueDate.split('-').map(Number);
+    const parsedDate = new Date(year, month - 1, day, 12, 0, 0);
+
     const expenseData = {
       description: description.trim(),
       amount: parseFloat(amount),
       category,
-      dueDate: new Date(dueDate),
+      dueDate: parsedDate,
       status,
       paymentSourceId: paymentSourceId || undefined,
       type,

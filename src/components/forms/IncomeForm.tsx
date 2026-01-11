@@ -55,12 +55,16 @@ export function IncomeForm({ onSuccess, income, editMode = false }: IncomeFormPr
     e.preventDefault();
     if (!description.trim() || !amount || !clientId || !category || !paymentDate) return;
 
+    // Parse date correctly to avoid timezone issues
+    const [year, month, day] = paymentDate.split('-').map(Number);
+    const parsedDate = new Date(year, month - 1, day, 12, 0, 0);
+
     const incomeData = {
       description: description.trim(),
       amount: parseFloat(amount),
       clientId,
       category,
-      paymentDate: new Date(paymentDate),
+      paymentDate: parsedDate,
     };
 
     if (editMode && income) {
