@@ -22,6 +22,7 @@ export default function Dashboard() {
     getBusinessSummary, 
     getPersonalSummary, 
     filteredExpenses,
+    filteredIncomes,
     selectedMonth,
     setSelectedMonth
   } = useFinance();
@@ -33,6 +34,12 @@ export default function Dashboard() {
   const recentExpenses = filteredExpenses
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  // Group incomes by category
+  const incomeByCategory = filteredIncomes.reduce((acc, income) => {
+    acc[income.category] = (acc[income.category] || 0) + income.amount;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -164,6 +171,27 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Income by Category */}
+      {Object.keys(incomeByCategory).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Receitas por Categoria</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(incomeByCategory).map(([category, amount]) => (
+                <div key={category} className="p-4 rounded-lg bg-income-light border border-income/20">
+                  <p className="text-sm text-muted-foreground">{category}</p>
+                  <p className="text-xl font-display font-bold text-income">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Source Consolidation */}
       <SourceConsolidation />
