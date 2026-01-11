@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFinance } from "@/contexts/FinanceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
-import { PaymentStatus } from "@/types/finance";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Pencil } from "lucide-react";
+import { PaymentStatus, Expense } from "@/types/finance";
+import { format } from "date-fns";
 
 const businessCategories = [
   "Impostos",
@@ -32,10 +34,12 @@ interface ExpenseFormProps {
   type: 'business' | 'personal';
   onSuccess?: () => void;
   triggerLabel?: string;
+  expense?: Expense; // For editing
+  editMode?: boolean;
 }
 
-export function ExpenseForm({ type, onSuccess, triggerLabel }: ExpenseFormProps) {
-  const { addExpense, clients } = useFinance();
+export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode = false }: ExpenseFormProps) {
+  const { addExpense, updateExpense, clients } = useFinance();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -43,14 +47,38 @@ export function ExpenseForm({ type, onSuccess, triggerLabel }: ExpenseFormProps)
   const [dueDate, setDueDate] = useState("");
   const [status, setStatus] = useState<PaymentStatus>("unpaid");
   const [paymentSourceId, setPaymentSourceId] = useState("");
+  const [isFixed, setIsFixed] = useState(false);
 
   const categories = type === 'business' ? businessCategories : personalCategories;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (expense && editMode) {
+      setDescription(expense.description);
+      setAmount(expense.amount.toString());
+      setCategory(expense.category);
+      setDueDate(format(new Date(expense.dueDate), 'yyyy-MM-dd'));
+      setStatus(expense.status);
+      setPaymentSourceId(expense.paymentSourceId || "");
+      setIsFixed(expense.isFixed);
+    }
+  }, [expense, editMode]);
+
+  const resetForm = () => {
+    setDescription("");
+    setAmount("");
+    setCategory("");
+    setDueDate("");
+    setStatus("unpaid");
+    setPaymentSourceId("");
+    setIsFixed(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim() || !amount || !category || !dueDate) return;
 
-    addExpense({
+    const expenseData = {
       description: description.trim(),
       amount: parseFloat(amount),
       category,
@@ -58,30 +86,44 @@ export function ExpenseForm({ type, onSuccess, triggerLabel }: ExpenseFormProps)
       status,
       paymentSourceId: paymentSourceId || undefined,
       type,
-    });
+      isFixed,
+    };
 
-    setDescription("");
-    setAmount("");
-    setCategory("");
-    setDueDate("");
-    setStatus("unpaid");
-    setPaymentSourceId("");
+    if (editMode && expense) {
+      updateExpense(expense.id, expenseData);
+    } else {
+      addExpense(expenseData);
+    }
+
+    resetForm();
     setOpen(false);
     onSuccess?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen && !editMode) resetForm();
+    }}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          {triggerLabel || (type === 'business' ? 'Nova Despesa Empresa' : 'Nova Despesa Pessoal')}
-        </Button>
+        {editMode ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            {triggerLabel || (type === 'business' ? 'Nova Despesa Empresa' : 'Nova Despesa Pessoal')}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {type === 'business' ? 'Adicionar Despesa da Empresa' : 'Adicionar Despesa Pessoal'}
+            {editMode 
+              ? 'Editar Despesa' 
+              : (type === 'business' ? 'Adicionar Despesa da Empresa' : 'Adicionar Despesa Pessoal')
+            }
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -170,11 +212,22 @@ export function ExpenseForm({ type, onSuccess, triggerLabel }: ExpenseFormProps)
             </div>
           )}
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isFixed"
+              checked={isFixed}
+              onCheckedChange={(checked) => setIsFixed(checked === true)}
+            />
+            <Label htmlFor="isFixed" className="text-sm font-normal cursor-pointer">
+              Despesa fixa (repete todo mês)
+            </Label>
+          </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit">{editMode ? 'Salvar' : 'Adicionar'}</Button>
           </div>
         </form>
       </DialogContent>

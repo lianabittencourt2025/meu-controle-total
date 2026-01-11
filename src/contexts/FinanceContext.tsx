@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { Client, Income, Expense, Investment, FinancialSummary, PaymentStatus } from '@/types/finance';
-import { startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { startOfMonth, endOfMonth, isWithinInterval, setMonth, setYear, getMonth, getYear } from 'date-fns';
 
 interface FinanceContextType {
   clients: Client[];
@@ -15,8 +15,10 @@ interface FinanceContextType {
   addClient: (client: Omit<Client, 'id' | 'createdAt'>) => void;
   removeClient: (id: string) => void;
   addIncome: (income: Omit<Income, 'id' | 'createdAt'>) => void;
+  updateIncome: (id: string, income: Partial<Omit<Income, 'id' | 'createdAt'>>) => void;
   removeIncome: (id: string) => void;
   addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
+  updateExpense: (id: string, expense: Partial<Omit<Expense, 'id' | 'createdAt'>>) => void;
   updateExpenseStatus: (id: string, status: PaymentStatus, paymentSourceId?: string) => void;
   removeExpense: (id: string) => void;
   addInvestment: (investment: Omit<Investment, 'id' | 'createdAt'>) => void;
@@ -45,11 +47,11 @@ const sampleIncomes: Income[] = [
 ];
 
 const sampleExpenses: Expense[] = [
-  { id: '1', description: 'Internet empresa', amount: 150, category: 'Infraestrutura', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'business', createdAt: new Date() },
-  { id: '2', description: 'DAS MEI', amount: 67, category: 'Impostos', dueDate: new Date(), status: 'unpaid', type: 'business', createdAt: new Date() },
-  { id: '3', description: 'Aluguel', amount: 1200, category: 'Moradia', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'personal', createdAt: new Date() },
-  { id: '4', description: 'Energia', amount: 280, category: 'Moradia', dueDate: new Date(), status: 'unpaid', type: 'personal', createdAt: new Date() },
-  { id: '5', description: 'Reserva emergência', amount: 500, category: 'Poupança', dueDate: new Date(), status: 'saved', paymentSourceId: '2', type: 'personal', createdAt: new Date() },
+  { id: '1', description: 'Internet empresa', amount: 150, category: 'Infraestrutura', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'business', isFixed: true, createdAt: new Date() },
+  { id: '2', description: 'DAS MEI', amount: 67, category: 'Impostos', dueDate: new Date(), status: 'unpaid', type: 'business', isFixed: true, createdAt: new Date() },
+  { id: '3', description: 'Aluguel', amount: 1200, category: 'Moradia', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'personal', isFixed: true, createdAt: new Date() },
+  { id: '4', description: 'Energia', amount: 280, category: 'Moradia', dueDate: new Date(), status: 'unpaid', type: 'personal', isFixed: true, createdAt: new Date() },
+  { id: '5', description: 'Reserva emergência', amount: 500, category: 'Poupança', dueDate: new Date(), status: 'saved', paymentSourceId: '2', type: 'personal', isFixed: false, createdAt: new Date() },
 ];
 
 const sampleInvestments: Investment[] = [
@@ -70,13 +72,38 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [investments, setInvestments] = useState<Investment[]>(sampleInvestments);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
 
-  // Filtered data by selected month
+  // Filtered data by selected month (including fixed expenses projected to current month)
   const filteredIncomes = useMemo(() => {
     return incomes.filter(income => isInMonth(income.paymentDate, selectedMonth));
   }, [incomes, selectedMonth]);
 
   const filteredExpenses = useMemo(() => {
-    return expenses.filter(expense => isInMonth(expense.dueDate, selectedMonth));
+    const targetMonth = getMonth(selectedMonth);
+    const targetYear = getYear(selectedMonth);
+    
+    return expenses.filter(expense => {
+      // If it's in the selected month, show it
+      if (isInMonth(expense.dueDate, selectedMonth)) {
+        return true;
+      }
+      // If it's a fixed expense and was created before or during the selected month, show it
+      if (expense.isFixed) {
+        const expenseDate = new Date(expense.dueDate);
+        const expenseMonth = getMonth(expenseDate);
+        const expenseYear = getYear(expenseDate);
+        // Show fixed expenses that were created in the same month of any year, or earlier
+        return expenseYear < targetYear || (expenseYear === targetYear && expenseMonth <= targetMonth);
+      }
+      return false;
+    }).map(expense => {
+      // For fixed expenses, adjust the due date to the selected month
+      if (expense.isFixed && !isInMonth(expense.dueDate, selectedMonth)) {
+        const originalDate = new Date(expense.dueDate);
+        const adjustedDate = setYear(setMonth(originalDate, targetMonth), targetYear);
+        return { ...expense, dueDate: adjustedDate };
+      }
+      return expense;
+    });
   }, [expenses, selectedMonth]);
 
   const filteredInvestments = useMemo(() => {
@@ -95,12 +122,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setIncomes(prev => [...prev, { ...income, id: generateId(), createdAt: new Date() }]);
   }, []);
 
+  const updateIncome = useCallback((id: string, updates: Partial<Omit<Income, 'id' | 'createdAt'>>) => {
+    setIncomes(prev => prev.map(i => 
+      i.id === id ? { ...i, ...updates } : i
+    ));
+  }, []);
+
   const removeIncome = useCallback((id: string) => {
     setIncomes(prev => prev.filter(i => i.id !== id));
   }, []);
 
   const addExpense = useCallback((expense: Omit<Expense, 'id' | 'createdAt'>) => {
     setExpenses(prev => [...prev, { ...expense, id: generateId(), createdAt: new Date() }]);
+  }, []);
+
+  const updateExpense = useCallback((id: string, updates: Partial<Omit<Expense, 'id' | 'createdAt'>>) => {
+    setExpenses(prev => prev.map(e => 
+      e.id === id ? { ...e, ...updates } : e
+    ));
   }, []);
 
   const updateExpenseStatus = useCallback((id: string, status: PaymentStatus, paymentSourceId?: string) => {
@@ -197,8 +236,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       addClient,
       removeClient,
       addIncome,
+      updateIncome,
       removeIncome,
       addExpense,
+      updateExpense,
       updateExpenseStatus,
       removeExpense,
       addInvestment,

@@ -25,6 +25,7 @@ export interface Expense {
   status: PaymentStatus;
   paymentSourceId?: string; // Client ID used as payment source
   type: 'business' | 'personal';
+  isFixed: boolean; // Fixed expense that repeats monthly
   createdAt: Date;
 }
 
