@@ -5,8 +5,8 @@ import { MonthSelector } from "@/components/MonthSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { TrendingUp, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { format, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function IncomePage() {
@@ -18,7 +18,15 @@ export default function IncomePage() {
     setSelectedMonth
   } = useFinance();
 
-  const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
+  const today = startOfDay(new Date());
+
+  // Separate received vs pending based on payment date
+  const receivedIncomes = filteredIncomes.filter(i => startOfDay(new Date(i.paymentDate)) <= today);
+  const pendingIncomes = filteredIncomes.filter(i => startOfDay(new Date(i.paymentDate)) > today);
+
+  const totalReceived = receivedIncomes.reduce((sum, i) => sum + i.amount, 0);
+  const totalPending = pendingIncomes.reduce((sum, i) => sum + i.amount, 0);
+  const totalIncome = totalReceived + totalPending;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -27,8 +35,8 @@ export default function IncomePage() {
     }).format(value);
   };
 
-  // Group by category
-  const byCategory = filteredIncomes.reduce((acc, income) => {
+  // Group received by category
+  const byCategory = receivedIncomes.reduce((acc, income) => {
     acc[income.category] = (acc[income.category] || 0) + income.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -51,11 +59,17 @@ export default function IncomePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Recebido"
-          value={totalIncome}
-          icon={TrendingUp}
+          value={totalReceived}
+          icon={CheckCircle}
           variant="income"
         />
-        {Object.entries(byCategory).slice(0, 3).map(([category, amount]) => (
+        <StatCard
+          title="A Receber"
+          value={totalPending}
+          icon={Clock}
+          variant="pending"
+        />
+        {Object.entries(byCategory).slice(0, 2).map(([category, amount]) => (
           <StatCard
             key={category}
             title={category}

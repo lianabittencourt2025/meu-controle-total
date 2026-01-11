@@ -6,7 +6,7 @@ interface StatCardProps {
   value: number;
   subtitle?: string;
   icon?: LucideIcon;
-  variant?: 'default' | 'income' | 'expense' | 'investment' | 'saved' | 'balance';
+  variant?: 'default' | 'income' | 'expense' | 'investment' | 'saved' | 'balance' | 'pending';
   format?: 'currency' | 'number';
   className?: string;
 }
@@ -37,6 +37,7 @@ export function StatCard({
     investment: 'stat-card-investment',
     saved: 'stat-card-saved',
     balance: 'stat-card-balance',
+    pending: 'stat-card',
   };
 
   const iconColors = {
@@ -46,6 +47,7 @@ export function StatCard({
     investment: 'text-investment',
     saved: 'text-saved',
     balance: 'text-primary',
+    pending: 'text-muted-foreground',
   };
 
   const valueColors = {
@@ -55,6 +57,7 @@ export function StatCard({
     investment: 'text-investment',
     saved: 'text-saved',
     balance: 'text-primary',
+    pending: 'text-muted-foreground',
   };
 
   return (
@@ -77,6 +80,7 @@ export function StatCard({
             variant === 'investment' && "bg-investment-light",
             variant === 'saved' && "bg-saved-light",
             variant === 'balance' && "bg-accent",
+            variant === 'pending' && "bg-muted",
             variant === 'default' && "bg-accent",
           )}>
             <Icon className={cn("w-5 h-5", iconColors[variant])} />
