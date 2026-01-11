@@ -1,11 +1,17 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { Client, Income, Expense, Investment, FinancialSummary, PaymentStatus } from '@/types/finance';
+import { startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 interface FinanceContextType {
   clients: Client[];
   incomes: Income[];
   expenses: Expense[];
   investments: Investment[];
+  filteredIncomes: Income[];
+  filteredExpenses: Expense[];
+  filteredInvestments: Investment[];
+  selectedMonth: Date;
+  setSelectedMonth: (date: Date) => void;
   addClient: (client: Omit<Client, 'id' | 'createdAt'>) => void;
   removeClient: (id: string) => void;
   addIncome: (income: Omit<Income, 'id' | 'createdAt'>) => void;
@@ -50,11 +56,32 @@ const sampleInvestments: Investment[] = [
   { id: '1', description: 'Novo equipamento', amount: 800, category: 'Equipamentos', date: new Date(), createdAt: new Date() },
 ];
 
+// Helper function to check if a date is within a month
+const isInMonth = (date: Date, monthDate: Date): boolean => {
+  const start = startOfMonth(monthDate);
+  const end = endOfMonth(monthDate);
+  return isWithinInterval(new Date(date), { start, end });
+};
+
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [clients, setClients] = useState<Client[]>(sampleClients);
   const [incomes, setIncomes] = useState<Income[]>(sampleIncomes);
   const [expenses, setExpenses] = useState<Expense[]>(sampleExpenses);
   const [investments, setInvestments] = useState<Investment[]>(sampleInvestments);
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+
+  // Filtered data by selected month
+  const filteredIncomes = useMemo(() => {
+    return incomes.filter(income => isInMonth(income.paymentDate, selectedMonth));
+  }, [incomes, selectedMonth]);
+
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter(expense => isInMonth(expense.dueDate, selectedMonth));
+  }, [expenses, selectedMonth]);
+
+  const filteredInvestments = useMemo(() => {
+    return investments.filter(investment => isInMonth(investment.date, selectedMonth));
+  }, [investments, selectedMonth]);
 
   const addClient = useCallback((client: Omit<Client, 'id' | 'createdAt'>) => {
     setClients(prev => [...prev, { ...client, id: generateId(), createdAt: new Date() }]);
@@ -99,39 +126,39 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [clients]);
 
   const calculateSummary = useCallback((type?: 'business' | 'personal'): FinancialSummary => {
-    const filteredExpenses = type 
-      ? expenses.filter(e => e.type === type)
-      : expenses;
+    const typeFilteredExpenses = type 
+      ? filteredExpenses.filter(e => e.type === type)
+      : filteredExpenses;
 
-    const totalIncome = type === 'personal' ? 0 : incomes.reduce((sum, i) => sum + i.amount, 0);
-    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const totalInvestments = type === 'personal' ? 0 : investments.reduce((sum, i) => sum + i.amount, 0);
+    const totalIncome = type === 'personal' ? 0 : filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
+    const totalExpenses = typeFilteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalInvestments = type === 'personal' ? 0 : filteredInvestments.reduce((sum, i) => sum + i.amount, 0);
     
-    const paidExpenses = filteredExpenses
+    const paidExpenses = typeFilteredExpenses
       .filter(e => e.status === 'paid')
       .reduce((sum, e) => sum + e.amount, 0);
     
-    const unpaidExpenses = filteredExpenses
+    const unpaidExpenses = typeFilteredExpenses
       .filter(e => e.status === 'unpaid')
       .reduce((sum, e) => sum + e.amount, 0);
     
-    const savedExpenses = filteredExpenses
+    const savedExpenses = typeFilteredExpenses
       .filter(e => e.status === 'saved')
       .reduce((sum, e) => sum + e.amount, 0);
 
     // Calculate expenses by payment source
     const expensesBySource: Record<string, number> = {};
-    filteredExpenses.forEach(e => {
+    typeFilteredExpenses.forEach(e => {
       if (e.paymentSourceId) {
         expensesBySource[e.paymentSourceId] = (expensesBySource[e.paymentSourceId] || 0) + e.amount;
       }
     });
 
-    const businessExpenses = expenses
+    const businessExpenses = filteredExpenses
       .filter(e => e.type === 'business')
       .reduce((sum, e) => sum + e.amount, 0);
     
-    const personalExpenses = expenses
+    const personalExpenses = filteredExpenses
       .filter(e => e.type === 'personal')
       .reduce((sum, e) => sum + e.amount, 0);
 
@@ -150,7 +177,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       personalBalance,
       expensesBySource,
     };
-  }, [incomes, expenses, investments]);
+  }, [filteredIncomes, filteredExpenses, filteredInvestments]);
 
   const getBusinessSummary = useCallback(() => calculateSummary('business'), [calculateSummary]);
   const getPersonalSummary = useCallback(() => calculateSummary('personal'), [calculateSummary]);
@@ -162,6 +189,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       incomes,
       expenses,
       investments,
+      filteredIncomes,
+      filteredExpenses,
+      filteredInvestments,
+      selectedMonth,
+      setSelectedMonth,
       addClient,
       removeClient,
       addIncome,

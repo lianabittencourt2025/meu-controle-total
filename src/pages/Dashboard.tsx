@@ -2,6 +2,7 @@ import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { SourceConsolidation } from "@/components/SourceConsolidation";
 import { ExpenseTable } from "@/components/ExpenseTable";
+import { MonthSelector } from "@/components/MonthSelector";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -16,22 +17,32 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Dashboard() {
-  const { getTotalSummary, getBusinessSummary, getPersonalSummary, expenses, incomes } = useFinance();
+  const { 
+    getTotalSummary, 
+    getBusinessSummary, 
+    getPersonalSummary, 
+    filteredExpenses,
+    selectedMonth,
+    setSelectedMonth
+  } = useFinance();
   
   const totalSummary = getTotalSummary();
   const businessSummary = getBusinessSummary();
   const personalSummary = getPersonalSummary();
 
-  const recentExpenses = expenses
+  const recentExpenses = filteredExpenses
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Visão geral das suas finanças</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Visão geral das suas finanças</p>
+        </div>
+        <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
       </div>
 
       {/* Main Stats */}

@@ -1,6 +1,7 @@
 import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
+import { MonthSelector } from "@/components/MonthSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,14 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function InvestmentsPage() {
-  const { investments, removeInvestment } = useFinance();
+  const { 
+    filteredInvestments, 
+    removeInvestment,
+    selectedMonth,
+    setSelectedMonth
+  } = useFinance();
 
-  const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
+  const totalInvestments = filteredInvestments.reduce((sum, i) => sum + i.amount, 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -21,7 +27,7 @@ export default function InvestmentsPage() {
   };
 
   // Group by category
-  const byCategory = investments.reduce((acc, investment) => {
+  const byCategory = filteredInvestments.reduce((acc, investment) => {
     acc[investment.category] = (acc[investment.category] || 0) + investment.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -34,7 +40,10 @@ export default function InvestmentsPage() {
           <h1 className="text-3xl font-display font-bold text-foreground">Investimentos</h1>
           <p className="text-muted-foreground mt-1">Investimentos na empresa</p>
         </div>
-        <InvestmentForm />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          <InvestmentForm />
+        </div>
       </div>
 
       {/* Stats */}
@@ -61,9 +70,9 @@ export default function InvestmentsPage() {
           <CardTitle>Todos os Investimentos</CardTitle>
         </CardHeader>
         <CardContent>
-          {investments.length === 0 ? (
+          {filteredInvestments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhum investimento cadastrado
+              Nenhum investimento neste mês
             </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
@@ -78,7 +87,7 @@ export default function InvestmentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {investments.map((investment) => (
+                  {filteredInvestments.map((investment) => (
                     <TableRow key={investment.id} className="hover:bg-muted/30">
                       <TableCell className="font-medium">{investment.description}</TableCell>
                       <TableCell>

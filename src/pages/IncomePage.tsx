@@ -1,6 +1,7 @@
 import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { IncomeForm } from "@/components/forms/IncomeForm";
+import { MonthSelector } from "@/components/MonthSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,15 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function IncomePage() {
-  const { incomes, removeIncome, getClientById } = useFinance();
+  const { 
+    filteredIncomes, 
+    removeIncome, 
+    getClientById,
+    selectedMonth,
+    setSelectedMonth
+  } = useFinance();
 
-  const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
+  const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -21,7 +28,7 @@ export default function IncomePage() {
   };
 
   // Group by category
-  const byCategory = incomes.reduce((acc, income) => {
+  const byCategory = filteredIncomes.reduce((acc, income) => {
     acc[income.category] = (acc[income.category] || 0) + income.amount;
     return acc;
   }, {} as Record<string, number>);
@@ -34,7 +41,10 @@ export default function IncomePage() {
           <h1 className="text-3xl font-display font-bold text-foreground">Recebimentos</h1>
           <p className="text-muted-foreground mt-1">Entradas de receita</p>
         </div>
-        <IncomeForm />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          <IncomeForm />
+        </div>
       </div>
 
       {/* Stats */}
@@ -61,9 +71,9 @@ export default function IncomePage() {
           <CardTitle>Todos os Recebimentos</CardTitle>
         </CardHeader>
         <CardContent>
-          {incomes.length === 0 ? (
+          {filteredIncomes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhum recebimento cadastrado
+              Nenhum recebimento neste mês
             </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
@@ -79,7 +89,7 @@ export default function IncomePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {incomes.map((income) => {
+                  {filteredIncomes.map((income) => {
                     const client = getClientById(income.clientId);
                     return (
                       <TableRow key={income.id} className="hover:bg-muted/30">

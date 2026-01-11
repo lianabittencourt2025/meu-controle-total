@@ -2,6 +2,7 @@ import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { ExpenseForm } from "@/components/forms/ExpenseForm";
+import { MonthSelector } from "@/components/MonthSelector";
 import { TrendingUp, TrendingDown, PiggyBank, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,16 +15,18 @@ import { ptBR } from "date-fns/locale";
 export default function BusinessPage() {
   const { 
     getBusinessSummary, 
-    expenses, 
-    incomes, 
-    investments,
+    filteredExpenses,
+    filteredIncomes,
+    filteredInvestments,
     removeIncome,
     removeInvestment,
-    getClientById 
+    getClientById,
+    selectedMonth,
+    setSelectedMonth
   } = useFinance();
   
   const summary = getBusinessSummary();
-  const businessExpenses = expenses.filter(e => e.type === 'business');
+  const businessExpenses = filteredExpenses.filter(e => e.type === 'business');
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -40,7 +43,10 @@ export default function BusinessPage() {
           <h1 className="text-3xl font-display font-bold text-foreground">Empresa</h1>
           <p className="text-muted-foreground mt-1">Gestão financeira do seu MEI</p>
         </div>
-        <ExpenseForm type="business" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+          <ExpenseForm type="business" />
+        </div>
       </div>
 
       {/* Stats */}
@@ -75,8 +81,8 @@ export default function BusinessPage() {
       <Tabs defaultValue="expenses" className="w-full">
         <TabsList>
           <TabsTrigger value="expenses">Despesas ({businessExpenses.length})</TabsTrigger>
-          <TabsTrigger value="income">Recebimentos ({incomes.length})</TabsTrigger>
-          <TabsTrigger value="investments">Investimentos ({investments.length})</TabsTrigger>
+          <TabsTrigger value="income">Recebimentos ({filteredIncomes.length})</TabsTrigger>
+          <TabsTrigger value="investments">Investimentos ({filteredInvestments.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="expenses" className="mt-4">
@@ -96,9 +102,9 @@ export default function BusinessPage() {
               <CardTitle>Recebimentos</CardTitle>
             </CardHeader>
             <CardContent>
-              {incomes.length === 0 ? (
+              {filteredIncomes.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Nenhum recebimento cadastrado
+                  Nenhum recebimento neste mês
                 </div>
               ) : (
                 <div className="rounded-lg border border-border overflow-hidden">
@@ -114,7 +120,7 @@ export default function BusinessPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {incomes.map((income) => {
+                      {filteredIncomes.map((income) => {
                         const client = getClientById(income.clientId);
                         return (
                           <TableRow key={income.id} className="hover:bg-muted/30">
@@ -162,9 +168,9 @@ export default function BusinessPage() {
               <CardTitle>Investimentos na Empresa</CardTitle>
             </CardHeader>
             <CardContent>
-              {investments.length === 0 ? (
+              {filteredInvestments.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Nenhum investimento cadastrado
+                  Nenhum investimento neste mês
                 </div>
               ) : (
                 <div className="rounded-lg border border-border overflow-hidden">
@@ -179,7 +185,7 @@ export default function BusinessPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {investments.map((investment) => (
+                      {filteredInvestments.map((investment) => (
                         <TableRow key={investment.id} className="hover:bg-muted/30">
                           <TableCell className="font-medium">{investment.description}</TableCell>
                           <TableCell>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 
 export function SourceConsolidation() {
-  const { clients, expenses, incomes } = useFinance();
+  const { clients, filteredExpenses, filteredIncomes } = useFinance();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -14,11 +14,11 @@ export function SourceConsolidation() {
 
   // Calculate totals per client/source
   const sourceData = clients.map(client => {
-    const totalIncome = incomes
+    const totalIncome = filteredIncomes
       .filter(i => i.clientId === client.id)
       .reduce((sum, i) => sum + i.amount, 0);
 
-    const totalAllocated = expenses
+    const totalAllocated = filteredExpenses
       .filter(e => e.paymentSourceId === client.id)
       .reduce((sum, e) => sum + e.amount, 0);
 
