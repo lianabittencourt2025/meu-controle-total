@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useFinance } from "@/contexts/FinanceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil } from "lucide-react";
 import { PaymentStatus, Expense } from "@/types/finance";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const businessCategories = [
   "Saque",
@@ -40,7 +41,7 @@ interface ExpenseFormProps {
 }
 
 export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode = false }: ExpenseFormProps) {
-  const { addExpense, updateExpense, clients } = useFinance();
+  const { addExpense, updateExpense, clients, incomes, expenses } = useFinance();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -51,6 +52,39 @@ export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode =
   const [isFixed, setIsFixed] = useState(false);
 
   const categories = type === 'business' ? businessCategories : personalCategories;
+
+  // Calculate withdrawal limits
+  const withdrawalLimits = useMemo(() => {
+    // Total income received (payment date <= today)
+    const today = new Date();
+    const totalReceived = incomes
+      .filter(inc => new Date(inc.paymentDate) <= today)
+      .reduce((sum, inc) => sum + inc.amount, 0);
+
+    // Total withdrawals already made (excluding current expense if editing)
+    const existingWithdrawals = expenses
+      .filter(exp => exp.category === 'Saque' && exp.type === 'business' && (!editMode || exp.id !== expense?.id))
+      .reduce((sum, exp) => sum + exp.amount, 0);
+
+    // Available for withdrawal (total)
+    const availableTotal = Math.max(0, totalReceived - existingWithdrawals);
+
+    // Per-client limits
+    const clientLimits: Record<string, number> = {};
+    clients.forEach(client => {
+      const clientIncome = incomes
+        .filter(inc => inc.clientId === client.id && new Date(inc.paymentDate) <= today)
+        .reduce((sum, inc) => sum + inc.amount, 0);
+      
+      const clientWithdrawals = expenses
+        .filter(exp => exp.category === 'Saque' && exp.type === 'business' && exp.paymentSourceId === client.id && (!editMode || exp.id !== expense?.id))
+        .reduce((sum, exp) => sum + exp.amount, 0);
+      
+      clientLimits[client.id] = Math.max(0, clientIncome - clientWithdrawals);
+    });
+
+    return { availableTotal, clientLimits };
+  }, [incomes, expenses, clients, editMode, expense?.id]);
 
   // Populate form when editing
   useEffect(() => {
@@ -79,13 +113,33 @@ export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode =
     e.preventDefault();
     if (!description.trim() || !amount || !category || !dueDate) return;
 
+    const parsedAmount = parseFloat(amount);
+
+    // Validation for "Saque" category
+    if (category === 'Saque' && type === 'business') {
+      // Check total limit
+      if (parsedAmount > withdrawalLimits.availableTotal) {
+        toast.error(`Saque excede o total disponível. Máximo: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(withdrawalLimits.availableTotal)}`);
+        return;
+      }
+
+      // Check client-specific limit if a source is selected
+      if (paymentSourceId && withdrawalLimits.clientLimits[paymentSourceId] !== undefined) {
+        if (parsedAmount > withdrawalLimits.clientLimits[paymentSourceId]) {
+          const clientName = clients.find(c => c.id === paymentSourceId)?.name || 'Cliente';
+          toast.error(`Saque excede o disponível de ${clientName}. Máximo: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(withdrawalLimits.clientLimits[paymentSourceId])}`);
+          return;
+        }
+      }
+    }
+
     // Parse date correctly to avoid timezone issues
     const [year, month, day] = dueDate.split('-').map(Number);
     const parsedDate = new Date(year, month - 1, day, 12, 0, 0);
 
     const expenseData = {
       description: description.trim(),
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category,
       dueDate: parsedDate,
       status,
@@ -156,6 +210,13 @@ export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode =
                 onChange={(e) => setAmount(e.target.value)}
                 required
               />
+              {category === 'Saque' && type === 'business' && (
+                <p className="text-xs text-muted-foreground">
+                  Disponível: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    paymentSourceId ? withdrawalLimits.clientLimits[paymentSourceId] ?? withdrawalLimits.availableTotal : withdrawalLimits.availableTotal
+                  )}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="dueDate">Data de Vencimento</Label>
