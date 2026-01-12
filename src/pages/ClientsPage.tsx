@@ -1,10 +1,11 @@
+import { forwardRef } from "react";
 import { useFinance } from "@/contexts/FinanceContext";
 import { ClientForm } from "@/components/forms/ClientForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Users, TrendingUp } from "lucide-react";
 
-export default function ClientsPage() {
+const ClientsPage = forwardRef<HTMLDivElement>(function ClientsPage(_, ref) {
   const { clients, incomes, expenses, removeClient } = useFinance();
 
   const formatCurrency = (value: number) => {
@@ -41,7 +42,7 @@ export default function ClientsPage() {
   const totalRevenue = incomes.reduce((sum, i) => sum + i.amount, 0);
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
+    <div ref={ref} className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -157,4 +158,6 @@ export default function ClientsPage() {
       </Card>
     </div>
   );
-}
+});
+
+export default ClientsPage;
