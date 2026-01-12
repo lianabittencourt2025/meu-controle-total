@@ -260,23 +260,21 @@ export function ExpenseForm({ type, onSuccess, triggerLabel, expense, editMode =
             </Select>
           </div>
 
-          {(status === 'paid' || status === 'saved') && (
-            <div className="space-y-2">
-              <Label>Fonte de Pagamento (Cliente)</Label>
-              <Select value={paymentSourceId} onValueChange={setPaymentSourceId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a fonte" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>Fonte de Pagamento (Cliente)</Label>
+            <Select value={paymentSourceId} onValueChange={setPaymentSourceId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a fonte (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
