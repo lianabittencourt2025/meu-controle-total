@@ -3,6 +3,7 @@ import { StatCard } from "@/components/StatCard";
 import { SourceConsolidation } from "@/components/SourceConsolidation";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { MonthSelector } from "@/components/MonthSelector";
+import { MEILimitAlert } from "@/components/MEILimitAlert";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -53,6 +54,9 @@ export default function Dashboard() {
           <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
         </div>
       </div>
+
+      {/* MEI Limit Alert */}
+      <MEILimitAlert />
 
       {/* Main Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
