@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { Client, Income, Expense, Investment, FinancialSummary, PaymentStatus } from '@/types/finance';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { startOfMonth, endOfMonth, isWithinInterval, setMonth, setYear, getMonth, getYear } from 'date-fns';
 
 interface FinanceContextType {
@@ -11,6 +12,7 @@ interface FinanceContextType {
   filteredExpenses: Expense[];
   filteredInvestments: Investment[];
   selectedMonth: Date;
+  loading: boolean;
   setSelectedMonth: (date: Date) => void;
   addClient: (client: Omit<Client, 'id' | 'createdAt'>) => void;
   removeClient: (id: string) => void;
@@ -31,33 +33,6 @@ interface FinanceContextType {
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
-
-// Sample data for demonstration
-const sampleClients: Client[] = [
-  { id: '1', name: 'Usina', createdAt: new Date() },
-  { id: '2', name: 'Campo Grande', createdAt: new Date() },
-  { id: '3', name: 'Mercado', createdAt: new Date() },
-];
-
-const sampleIncomes: Income[] = [
-  { id: '1', description: 'Serviço mensal', amount: 3500, clientId: '1', paymentDate: new Date(), category: 'Serviços', createdAt: new Date() },
-  { id: '2', description: 'Projeto especial', amount: 1200, clientId: '2', paymentDate: new Date(), category: 'Projetos', createdAt: new Date() },
-  { id: '3', description: 'Consultoria', amount: 800, clientId: '3', paymentDate: new Date(), category: 'Consultoria', createdAt: new Date() },
-];
-
-const sampleExpenses: Expense[] = [
-  { id: '1', description: 'Internet empresa', amount: 150, category: 'Infraestrutura', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'business', isFixed: true, createdAt: new Date() },
-  { id: '2', description: 'DAS MEI', amount: 67, category: 'Impostos', dueDate: new Date(), status: 'unpaid', type: 'business', isFixed: true, createdAt: new Date() },
-  { id: '3', description: 'Aluguel', amount: 1200, category: 'Moradia', dueDate: new Date(), status: 'paid', paymentSourceId: '1', type: 'personal', isFixed: true, createdAt: new Date() },
-  { id: '4', description: 'Energia', amount: 280, category: 'Moradia', dueDate: new Date(), status: 'unpaid', type: 'personal', isFixed: true, createdAt: new Date() },
-  { id: '5', description: 'Reserva emergência', amount: 500, category: 'Poupança', dueDate: new Date(), status: 'saved', paymentSourceId: '2', type: 'personal', isFixed: false, createdAt: new Date() },
-];
-
-const sampleInvestments: Investment[] = [
-  { id: '1', description: 'Novo equipamento', amount: 800, category: 'Equipamentos', date: new Date(), createdAt: new Date() },
-];
-
 // Helper function to check if a date is within a month
 const isInMonth = (date: Date, monthDate: Date): boolean => {
   const start = startOfMonth(monthDate);
@@ -66,11 +41,26 @@ const isInMonth = (date: Date, monthDate: Date): boolean => {
 };
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
-  const [clients, setClients] = useState<Client[]>(sampleClients);
-  const [incomes, setIncomes] = useState<Income[]>(sampleIncomes);
-  const [expenses, setExpenses] = useState<Expense[]>(sampleExpenses);
-  const [investments, setInvestments] = useState<Investment[]>(sampleInvestments);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  
+  const {
+    clients,
+    incomes,
+    expenses,
+    investments,
+    loading,
+    addClient,
+    removeClient,
+    addIncome,
+    updateIncome,
+    removeIncome,
+    addExpense,
+    updateExpense,
+    updateExpenseStatus,
+    removeExpense,
+    addInvestment,
+    removeInvestment,
+  } = useSupabaseData();
 
   // Filtered data by selected month (including fixed expenses projected to current month)
   const filteredIncomes = useMemo(() => {
@@ -109,56 +99,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const filteredInvestments = useMemo(() => {
     return investments.filter(investment => isInMonth(investment.date, selectedMonth));
   }, [investments, selectedMonth]);
-
-  const addClient = useCallback((client: Omit<Client, 'id' | 'createdAt'>) => {
-    setClients(prev => [...prev, { ...client, id: generateId(), createdAt: new Date() }]);
-  }, []);
-
-  const removeClient = useCallback((id: string) => {
-    setClients(prev => prev.filter(c => c.id !== id));
-  }, []);
-
-  const addIncome = useCallback((income: Omit<Income, 'id' | 'createdAt'>) => {
-    setIncomes(prev => [...prev, { ...income, id: generateId(), createdAt: new Date() }]);
-  }, []);
-
-  const updateIncome = useCallback((id: string, updates: Partial<Omit<Income, 'id' | 'createdAt'>>) => {
-    setIncomes(prev => prev.map(i => 
-      i.id === id ? { ...i, ...updates } : i
-    ));
-  }, []);
-
-  const removeIncome = useCallback((id: string) => {
-    setIncomes(prev => prev.filter(i => i.id !== id));
-  }, []);
-
-  const addExpense = useCallback((expense: Omit<Expense, 'id' | 'createdAt'>) => {
-    setExpenses(prev => [...prev, { ...expense, id: generateId(), createdAt: new Date() }]);
-  }, []);
-
-  const updateExpense = useCallback((id: string, updates: Partial<Omit<Expense, 'id' | 'createdAt'>>) => {
-    setExpenses(prev => prev.map(e => 
-      e.id === id ? { ...e, ...updates } : e
-    ));
-  }, []);
-
-  const updateExpenseStatus = useCallback((id: string, status: PaymentStatus, paymentSourceId?: string) => {
-    setExpenses(prev => prev.map(e => 
-      e.id === id ? { ...e, status, paymentSourceId } : e
-    ));
-  }, []);
-
-  const removeExpense = useCallback((id: string) => {
-    setExpenses(prev => prev.filter(e => e.id !== id));
-  }, []);
-
-  const addInvestment = useCallback((investment: Omit<Investment, 'id' | 'createdAt'>) => {
-    setInvestments(prev => [...prev, { ...investment, id: generateId(), createdAt: new Date() }]);
-  }, []);
-
-  const removeInvestment = useCallback((id: string) => {
-    setInvestments(prev => prev.filter(i => i.id !== id));
-  }, []);
 
   const getClientById = useCallback((id: string) => {
     return clients.find(c => c.id === id);
@@ -244,6 +184,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       filteredExpenses,
       filteredInvestments,
       selectedMonth,
+      loading,
       setSelectedMonth,
       addClient,
       removeClient,
