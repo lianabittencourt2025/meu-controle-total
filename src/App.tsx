@@ -12,6 +12,7 @@ import PersonalPage from "./pages/PersonalPage";
 import ClientsPage from "./pages/ClientsPage";
 import IncomePage from "./pages/IncomePage";
 import InvestmentsPage from "./pages/InvestmentsPage";
+import DREPage from "./pages/DREPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -35,6 +36,7 @@ const App = () => {
                     <Route path="/clientes" element={<ClientsPage />} />
                     <Route path="/recebimentos" element={<IncomePage />} />
                     <Route path="/investimentos" element={<InvestmentsPage />} />
+                    <Route path="/dre" element={<DREPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>
