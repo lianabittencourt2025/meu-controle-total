@@ -121,18 +121,18 @@ export function EvolutionChart() {
           type="monotone"
           dataKey="receitas"
           name="Receitas"
-          stroke="hsl(var(--success))"
+          stroke="#1e3a5f"
           strokeWidth={2}
-          dot={{ fill: "hsl(var(--success))", strokeWidth: 2 }}
+          dot={{ fill: "#1e3a5f", strokeWidth: 2 }}
           activeDot={{ r: 6 }}
         />
         <Line
           type="monotone"
           dataKey="despesas"
           name="Despesas"
-          stroke="hsl(var(--danger))"
+          stroke="#ef4444"
           strokeWidth={2}
-          dot={{ fill: "hsl(var(--danger))", strokeWidth: 2 }}
+          dot={{ fill: "#ef4444", strokeWidth: 2 }}
           activeDot={{ r: 6 }}
         />
       </LineChart>
