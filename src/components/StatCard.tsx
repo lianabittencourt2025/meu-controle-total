@@ -20,31 +20,13 @@ export function StatCard({
   format = 'currency',
   className 
 }: StatCardProps) {
-  const formatValue = (val: number) => {
-    if (format === 'currency') {
-      // Use compact notation on small values to save space
-      if (Math.abs(val) >= 1000) {
-        return new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-          notation: 'compact',
-          maximumFractionDigits: 1
-        }).format(val);
-      }
-      return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      }).format(val);
-    }
-    return val.toString();
-  };
-
   const formatValueFull = (val: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(val);
   };
+
 
   const variantClasses = {
     default: 'stat-card',
@@ -81,10 +63,8 @@ export function StatCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">{title}</p>
-          {/* Mobile: compact, Desktop: full */}
-          <p className={cn("text-lg sm:text-2xl font-display font-bold mt-0.5 sm:mt-1 truncate", valueColors[variant])}>
-            <span className="sm:hidden">{formatValue(value)}</span>
-            <span className="hidden sm:inline">{formatValueFull(value)}</span>
+          <p className={cn("text-sm sm:text-2xl font-display font-bold mt-0.5 sm:mt-1", valueColors[variant])}>
+            {formatValueFull(value)}
           </p>
           {subtitle && (
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">{subtitle}</p>
