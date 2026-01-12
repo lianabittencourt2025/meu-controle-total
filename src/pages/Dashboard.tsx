@@ -4,6 +4,7 @@ import { SourceConsolidation } from "@/components/SourceConsolidation";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { MonthSelector } from "@/components/MonthSelector";
 import { MEILimitAlert } from "@/components/MEILimitAlert";
+import { EvolutionChart, ExpenseCategoryChart, YearComparisonChart } from "@/components/charts";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -13,9 +14,10 @@ import {
   User,
   CheckCircle,
   Clock,
-  Save
+  Save,
+  BarChart3
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Dashboard() {
   const { 
@@ -198,6 +200,46 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Analytics Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-primary" />
+          <h2 className="text-lg sm:text-xl font-display font-bold text-foreground">Análises</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="text-base sm:text-lg">Evolução Mensal</CardTitle>
+              <CardDescription>Receitas e despesas dos últimos 12 meses</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <EvolutionChart />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="text-base sm:text-lg">Despesas por Categoria</CardTitle>
+              <CardDescription>Distribuição das despesas do mês selecionado</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <ExpenseCategoryChart />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader className="p-4 sm:p-6 pb-2">
+            <CardTitle className="text-base sm:text-lg">Comparativo Anual</CardTitle>
+            <CardDescription>Comparação de receitas e despesas entre 2025 e 2026</CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+            <YearComparisonChart />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Source Consolidation */}
       <SourceConsolidation />
