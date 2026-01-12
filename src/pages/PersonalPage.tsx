@@ -3,17 +3,19 @@ import { StatCard } from "@/components/StatCard";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { ExpenseForm } from "@/components/forms/ExpenseForm";
 import { MonthSelector } from "@/components/MonthSelector";
-import { TrendingDown, CheckCircle, Clock, Save } from "lucide-react";
+import { TrendingDown, CheckCircle, Clock, Save, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PersonalPage() {
   const { 
+    getTotalSummary, 
     getPersonalSummary, 
     filteredExpenses,
     selectedMonth,
     setSelectedMonth
   } = useFinance();
   
+  const totalSummary = getTotalSummary();
   const summary = getPersonalSummary();
   const personalExpenses = filteredExpenses.filter(e => e.type === 'personal');
 
@@ -30,6 +32,24 @@ export default function PersonalPage() {
           <ExpenseForm type="personal" triggerLabel="Nova Despesa" />
         </div>
       </div>
+
+      {/* Disponível Pessoal Card */}
+      <Card className="border-l-4 border-l-primary">
+        <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-2">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            Disponível Pessoal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <p className={`text-2xl sm:text-3xl font-display font-bold ${totalSummary.personalBalance >= 0 ? 'text-income' : 'text-danger'}`}>
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.personalBalance)}
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Saques ({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.totalWithdrawals)}) - Despesas pagas ({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.personalPaidExpenses)})
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
