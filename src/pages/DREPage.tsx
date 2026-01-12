@@ -38,7 +38,7 @@ const years = Array.from({ length: 5 }, (_, i) => ({
 }));
 
 export default function DREPage() {
-  const { incomes, expenses, investments, getClientById } = useFinance();
+  const { incomes, expenses, investments } = useFinance();
   const [selectedMonth, setSelectedMonthState] = useState(getMonth(new Date()).toString());
   const [selectedYear, setSelectedYearState] = useState(getYear(new Date()).toString());
 
@@ -207,60 +207,63 @@ export default function DREPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-bold">DRE</h1>
-          <p className="text-muted-foreground">Demonstração do Resultado do Exercício</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Demonstração do Resultado do Exercício</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <Select value={selectedMonth} onValueChange={setSelectedMonthState}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Mês" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={selectedYear} onValueChange={setSelectedYearState}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Ano" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map((year) => (
-                <SelectItem key={year.value} value={year.value}>
-                  {year.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex gap-2">
+            <Select value={selectedMonth} onValueChange={setSelectedMonthState}>
+              <SelectTrigger className="flex-1 sm:w-[140px]">
+                <SelectValue placeholder="Mês" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedYear} onValueChange={setSelectedYearState}>
+              <SelectTrigger className="w-[90px] sm:w-[100px]">
+                <SelectValue placeholder="Ano" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year.value} value={year.value}>
+                    {year.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           
           <Button onClick={exportToCSV} variant="outline" className="gap-2">
             <Download className="w-4 h-4" />
-            Exportar CSV
+            <span className="hidden sm:inline">Exportar CSV</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
         </div>
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">
+            <CardTitle className="text-base sm:text-lg">
               {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
             </CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Demonstração simplificada do resultado do período
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <div className="space-y-1">
             {/* Receitas */}
             <div className="py-2">

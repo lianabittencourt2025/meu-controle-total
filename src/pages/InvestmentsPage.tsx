@@ -33,21 +33,21 @@ export default function InvestmentsPage() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Investimentos</h1>
-          <p className="text-muted-foreground mt-1">Investimentos na empresa</p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Investimentos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Investimentos na empresa</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
           <InvestmentForm />
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total Investido"
           value={totalInvestments}
@@ -66,56 +66,91 @@ export default function InvestmentsPage() {
 
       {/* Investments Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Todos os Investimentos</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Todos os Investimentos</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {filteredInvestments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground text-sm">
               Nenhum investimento neste mês
             </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredInvestments.map((investment) => (
-                    <TableRow key={investment.id} className="hover:bg-muted/30">
-                      <TableCell className="font-medium">{investment.description}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2 py-1 rounded-md bg-investment-light text-investment text-xs font-medium">
-                          {investment.category}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(investment.date), "dd/MM/yyyy", { locale: ptBR })}
-                      </TableCell>
-                      <TableCell className="text-right font-medium text-investment">
-                        {formatCurrency(investment.amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeInvestment(investment.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+            <>
+              {/* Mobile Cards View */}
+              <div className="space-y-3 md:hidden">
+                {filteredInvestments.map((investment) => (
+                  <div key={investment.id} className="p-3 rounded-lg border border-border bg-card">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm text-foreground truncate">{investment.description}</h3>
+                        <p className="text-lg font-display font-bold text-investment">
+                          {formatCurrency(investment.amount)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        onClick={() => removeInvestment(investment.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-investment-light text-investment text-xs font-medium">
+                        {investment.category}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/50 text-xs text-muted-foreground">
+                        {format(new Date(investment.date), "dd/MM", { locale: ptBR })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block rounded-lg border border-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInvestments.map((investment) => (
+                      <TableRow key={investment.id} className="hover:bg-muted/30">
+                        <TableCell className="font-medium">{investment.description}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-investment-light text-investment text-xs font-medium">
+                            {investment.category}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(investment.date), "dd/MM/yyyy", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-investment">
+                          {formatCurrency(investment.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeInvestment(investment.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
