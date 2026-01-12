@@ -44,16 +44,18 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Visão geral das suas finanças</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão geral das suas finanças</p>
+          </div>
+          <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
         </div>
-        <MonthSelector currentMonth={selectedMonth} onMonthChange={setSelectedMonth} />
       </div>
 
       {/* Main Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total Recebido"
           value={totalSummary.totalIncome}
@@ -85,36 +87,36 @@ export default function Dashboard() {
       </div>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <Card className="border-l-4 border-l-primary">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Building2 className="w-5 h-5 text-primary" />
+          <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               Caixa Empresa
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-display font-bold text-foreground">
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+            <p className="text-xl sm:text-3xl font-display font-bold text-foreground">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(businessSummary.businessBalance)}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
               Receita - Despesas empresa - Investimentos
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-accent-foreground">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <User className="w-5 h-5 text-accent-foreground" />
+          <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-accent-foreground" />
               Disponível Pessoal
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-display font-bold text-foreground">
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+            <p className="text-xl sm:text-3xl font-display font-bold text-foreground">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(personalSummary.personalBalance)}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
               Caixa empresa - Despesas pessoais
             </p>
           </CardContent>
@@ -122,17 +124,17 @@ export default function Dashboard() {
       </div>
 
       {/* Status Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-success-light flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-success" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-success-light flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pago</p>
-                <p className="text-2xl font-display font-bold text-success">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.paidExpenses)}
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">Pago</p>
+                <p className="text-sm sm:text-2xl font-display font-bold text-success">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: window.innerWidth < 640 ? 'compact' : 'standard' }).format(totalSummary.paidExpenses)}
                 </p>
               </div>
             </div>
@@ -140,15 +142,15 @@ export default function Dashboard() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-danger-light flex items-center justify-center">
-                <Clock className="w-6 h-6 text-danger" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-danger-light flex items-center justify-center">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-danger" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">A Pagar</p>
-                <p className="text-2xl font-display font-bold text-danger">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.unpaidExpenses)}
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">A Pagar</p>
+                <p className="text-sm sm:text-2xl font-display font-bold text-danger">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: window.innerWidth < 640 ? 'compact' : 'standard' }).format(totalSummary.unpaidExpenses)}
                 </p>
               </div>
             </div>
@@ -156,15 +158,15 @@ export default function Dashboard() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-warning-light flex items-center justify-center">
-                <Save className="w-6 h-6 text-warning" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-warning-light flex items-center justify-center">
+                <Save className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Guardado</p>
-                <p className="text-2xl font-display font-bold text-saved">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.savedExpenses)}
+              <div className="text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-muted-foreground">Guardado</p>
+                <p className="text-sm sm:text-2xl font-display font-bold text-saved">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: window.innerWidth < 640 ? 'compact' : 'standard' }).format(totalSummary.savedExpenses)}
                 </p>
               </div>
             </div>
@@ -175,15 +177,15 @@ export default function Dashboard() {
       {/* Income by Category */}
       {Object.keys(incomeByCategory).length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Receitas por Categoria</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Receitas por Categoria</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {Object.entries(incomeByCategory).map(([category, amount]) => (
-                <div key={category} className="p-4 rounded-lg bg-income-light border border-income/20">
-                  <p className="text-sm text-muted-foreground">{category}</p>
-                  <p className="text-xl font-display font-bold text-income">
+                <div key={category} className="p-3 sm:p-4 rounded-lg bg-income-light border border-income/20">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{category}</p>
+                  <p className="text-base sm:text-xl font-display font-bold text-income">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)}
                   </p>
                 </div>
