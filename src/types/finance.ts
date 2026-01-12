@@ -48,5 +48,7 @@ export interface FinancialSummary {
   availableBalance: number;
   businessBalance: number;
   personalBalance: number;
+  totalWithdrawals: number; // Total sacado da empresa para pessoal
+  personalPaidExpenses: number; // Despesas pessoais pagas
   expensesBySource: Record<string, number>;
 }

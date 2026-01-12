@@ -193,16 +193,26 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    const businessExpenses = filteredExpenses
-      .filter(e => e.type === 'business')
-      .reduce((sum, e) => sum + e.amount, 0);
-    
-    const personalExpenses = filteredExpenses
-      .filter(e => e.type === 'personal')
+    // Saques são despesas empresariais com categoria "Saque"
+    const totalWithdrawals = filteredExpenses
+      .filter(e => e.type === 'business' && e.category === 'Saque' && e.status === 'paid')
       .reduce((sum, e) => sum + e.amount, 0);
 
-    const businessBalance = totalIncome - businessExpenses - totalInvestments;
-    const personalBalance = businessBalance - personalExpenses;
+    // Despesas empresariais SEM contar os saques
+    const businessExpensesWithoutWithdrawals = filteredExpenses
+      .filter(e => e.type === 'business' && e.category !== 'Saque')
+      .reduce((sum, e) => sum + e.amount, 0);
+    
+    // Despesas pessoais pagas
+    const personalPaidExpenses = filteredExpenses
+      .filter(e => e.type === 'personal' && e.status === 'paid')
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    // Caixa empresa = Receita - Despesas empresa (incluindo saques) - Investimentos
+    const businessBalance = totalIncome - businessExpensesWithoutWithdrawals - totalWithdrawals - totalInvestments;
+    
+    // Disponível pessoal = Saques - Despesas pessoais pagas
+    const personalBalance = totalWithdrawals - personalPaidExpenses;
 
     return {
       totalIncome,
@@ -214,6 +224,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       availableBalance: totalIncome - paidExpenses - totalInvestments,
       businessBalance,
       personalBalance,
+      totalWithdrawals,
+      personalPaidExpenses,
       expensesBySource,
     };
   }, [filteredIncomes, filteredExpenses, filteredInvestments]);
