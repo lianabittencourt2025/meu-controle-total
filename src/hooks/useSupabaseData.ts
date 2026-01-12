@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Client, Income, Expense, Investment, PaymentStatus } from '@/types/finance';
+import { toast } from 'sonner';
 
 // Convert database row to Client
 const toClient = (row: any): Client => ({
@@ -87,18 +88,24 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error adding client:', error);
+      toast.error('Erro ao adicionar cliente');
       return;
     }
-    if (data) setClients(prev => [toClient(data), ...prev]);
+    if (data) {
+      setClients(prev => [toClient(data), ...prev]);
+      toast.success('Cliente adicionado!');
+    }
   }, []);
 
   const removeClient = useCallback(async (id: string) => {
     const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) {
       console.error('Error removing client:', error);
+      toast.error('Erro ao remover cliente');
       return;
     }
     setClients(prev => prev.filter(c => c.id !== id));
+    toast.success('Cliente removido!');
   }, []);
 
   // INCOMES
@@ -117,9 +124,13 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error adding income:', error);
+      toast.error('Erro ao adicionar receita');
       return;
     }
-    if (data) setIncomes(prev => [toIncome(data), ...prev]);
+    if (data) {
+      setIncomes(prev => [toIncome(data), ...prev]);
+      toast.success('Receita adicionada!');
+    }
   }, []);
 
   const updateIncome = useCallback(async (id: string, updates: Partial<Omit<Income, 'id' | 'createdAt'>>) => {
@@ -139,10 +150,12 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error updating income:', error);
+      toast.error('Erro ao atualizar receita');
       return;
     }
     if (data) {
       setIncomes(prev => prev.map(i => i.id === id ? toIncome(data) : i));
+      toast.success('Receita atualizada!');
     }
   }, []);
 
@@ -150,9 +163,11 @@ export function useSupabaseData() {
     const { error } = await supabase.from('incomes').delete().eq('id', id);
     if (error) {
       console.error('Error removing income:', error);
+      toast.error('Erro ao remover receita');
       return;
     }
     setIncomes(prev => prev.filter(i => i.id !== id));
+    toast.success('Receita removida!');
   }, []);
 
   // EXPENSES
@@ -174,9 +189,13 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error adding expense:', error);
+      toast.error('Erro ao adicionar despesa');
       return;
     }
-    if (data) setExpenses(prev => [toExpense(data), ...prev]);
+    if (data) {
+      setExpenses(prev => [toExpense(data), ...prev]);
+      toast.success('Despesa adicionada!');
+    }
   }, []);
 
   const updateExpense = useCallback(async (id: string, updates: Partial<Omit<Expense, 'id' | 'createdAt'>>) => {
@@ -199,10 +218,12 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error updating expense:', error);
+      toast.error('Erro ao atualizar despesa');
       return;
     }
     if (data) {
       setExpenses(prev => prev.map(e => e.id === id ? toExpense(data) : e));
+      toast.success('Despesa atualizada!');
     }
   }, []);
 
@@ -219,6 +240,7 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error updating expense status:', error);
+      toast.error('Erro ao atualizar status');
       return;
     }
     if (data) {
@@ -230,9 +252,11 @@ export function useSupabaseData() {
     const { error } = await supabase.from('expenses').delete().eq('id', id);
     if (error) {
       console.error('Error removing expense:', error);
+      toast.error('Erro ao remover despesa');
       return;
     }
     setExpenses(prev => prev.filter(e => e.id !== id));
+    toast.success('Despesa removida!');
   }, []);
 
   // INVESTMENTS
@@ -250,18 +274,24 @@ export function useSupabaseData() {
     
     if (error) {
       console.error('Error adding investment:', error);
+      toast.error('Erro ao adicionar investimento');
       return;
     }
-    if (data) setInvestments(prev => [toInvestment(data), ...prev]);
+    if (data) {
+      setInvestments(prev => [toInvestment(data), ...prev]);
+      toast.success('Investimento adicionado!');
+    }
   }, []);
 
   const removeInvestment = useCallback(async (id: string) => {
     const { error } = await supabase.from('investments').delete().eq('id', id);
     if (error) {
       console.error('Error removing investment:', error);
+      toast.error('Erro ao remover investimento');
       return;
     }
     setInvestments(prev => prev.filter(i => i.id !== id));
+    toast.success('Investimento removido!');
   }, []);
 
   return {
