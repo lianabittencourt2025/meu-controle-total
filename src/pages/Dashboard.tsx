@@ -119,11 +119,11 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-            <p className="text-xl sm:text-3xl font-display font-bold text-foreground">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(personalSummary.personalBalance)}
+            <p className={`text-xl sm:text-3xl font-display font-bold ${totalSummary.personalBalance >= 0 ? 'text-foreground' : 'text-danger'}`}>
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.personalBalance)}
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
-              Caixa empresa - Despesas pessoais
+              Saques ({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.totalWithdrawals)}) - Despesas pessoais pagas ({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSummary.personalPaidExpenses)})
             </p>
           </CardContent>
         </Card>

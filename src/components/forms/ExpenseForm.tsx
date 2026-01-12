@@ -11,6 +11,7 @@ import { PaymentStatus, Expense } from "@/types/finance";
 import { format } from "date-fns";
 
 const businessCategories = [
+  "Saque",
   "Impostos",
   "Infraestrutura",
   "Marketing",
