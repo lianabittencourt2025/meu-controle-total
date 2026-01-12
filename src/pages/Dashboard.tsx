@@ -1,6 +1,7 @@
 import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
 import { SourceConsolidation } from "@/components/SourceConsolidation";
+import { ClientExpenseAllocation } from "@/components/ClientExpenseAllocation";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import { MonthSelector } from "@/components/MonthSelector";
 import { MEILimitAlert } from "@/components/MEILimitAlert";
@@ -240,6 +241,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Client Expense Allocation */}
+      <ClientExpenseAllocation />
 
       {/* Source Consolidation */}
       <SourceConsolidation />
