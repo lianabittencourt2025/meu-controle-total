@@ -42,7 +42,7 @@ export default function Dashboard() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -200,10 +200,10 @@ export default function Dashboard() {
 
       {/* Recent Expenses */}
       <Card>
-        <CardHeader>
-          <CardTitle>Últimas Despesas</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Últimas Despesas</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <ExpenseTable expenses={recentExpenses} showType />
         </CardContent>
       </Card>

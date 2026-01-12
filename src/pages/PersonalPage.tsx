@@ -18,7 +18,7 @@ export default function PersonalPage() {
   const personalExpenses = filteredExpenses.filter(e => e.type === 'personal');
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div>
@@ -61,10 +61,10 @@ export default function PersonalPage() {
 
       {/* Expenses Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Despesas Pessoais</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Despesas Pessoais</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <ExpenseTable expenses={personalExpenses} />
         </CardContent>
       </Card>
