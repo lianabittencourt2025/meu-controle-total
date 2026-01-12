@@ -6,6 +6,7 @@ import {
   TrendingUp,
   Receipt,
   PiggyBank,
+  FileSpreadsheet,
   Menu,
   X
 } from "lucide-react";
@@ -49,6 +50,12 @@ const menuItems = [
     url: "/investimentos", 
     icon: PiggyBank,
     description: "Na empresa"
+  },
+  { 
+    title: "DRE", 
+    url: "/dre", 
+    icon: FileSpreadsheet,
+    description: "Resultado do exercício"
   },
 ];
 
