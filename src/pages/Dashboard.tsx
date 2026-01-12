@@ -53,8 +53,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* MEI Limit Alert */}
-      <MEILimitAlert />
 
       {/* Main Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -230,6 +228,9 @@ export default function Dashboard() {
 
       {/* Client Expense Allocation */}
       <ClientExpenseAllocation />
+
+      {/* MEI Limit Alert */}
+      <MEILimitAlert />
     </div>
   );
 }
