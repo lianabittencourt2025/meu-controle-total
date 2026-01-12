@@ -1,11 +1,9 @@
 import { useFinance } from "@/contexts/FinanceContext";
 import { StatCard } from "@/components/StatCard";
-import { SourceConsolidation } from "@/components/SourceConsolidation";
 import { ClientExpenseAllocation } from "@/components/ClientExpenseAllocation";
-import { ExpenseTable } from "@/components/ExpenseTable";
 import { MonthSelector } from "@/components/MonthSelector";
 import { MEILimitAlert } from "@/components/MEILimitAlert";
-import { EvolutionChart, ExpenseCategoryChart, YearComparisonChart } from "@/components/charts";
+import { EvolutionChart, ExpenseCategoryChart } from "@/components/charts";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -35,9 +33,6 @@ export default function Dashboard() {
   const businessSummary = getBusinessSummary();
   const personalSummary = getPersonalSummary();
 
-  const recentExpenses = filteredExpenses
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
 
   // Group incomes by category
   const incomeByCategory = filteredIncomes.reduce((acc, income) => {
@@ -231,32 +226,10 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader className="p-4 sm:p-6 pb-2">
-            <CardTitle className="text-base sm:text-lg">Comparativo Anual</CardTitle>
-            <CardDescription>Comparação de receitas e despesas entre 2025 e 2026</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-            <YearComparisonChart />
-          </CardContent>
-        </Card>
       </div>
 
       {/* Client Expense Allocation */}
       <ClientExpenseAllocation />
-
-      {/* Source Consolidation */}
-      <SourceConsolidation />
-
-      {/* Recent Expenses */}
-      <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Últimas Despesas</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-          <ExpenseTable expenses={recentExpenses} showType />
-        </CardContent>
-      </Card>
     </div>
   );
 }
