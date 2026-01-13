@@ -52,7 +52,7 @@ export default function BusinessPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard
           title="Receita Total"
           value={summary.totalIncome}
@@ -64,6 +64,12 @@ export default function BusinessPage() {
           value={summary.totalExpenses}
           icon={TrendingDown}
           variant="expense"
+        />
+        <StatCard
+          title="Saques"
+          value={totalWithdrawals}
+          icon={ArrowRightLeft}
+          variant="balance"
         />
         <StatCard
           title="Investimentos"
