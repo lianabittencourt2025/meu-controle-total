@@ -5,6 +5,20 @@ import { ExpenseForm } from "@/components/forms/ExpenseForm";
 import { MonthSelector } from "@/components/MonthSelector";
 import { TrendingDown, CheckCircle, Clock, Save, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMemo } from "react";
+
+const personalCategories = [
+  "Moradia",
+  "Alimentação",
+  "Transporte",
+  "Saúde",
+  "Lazer",
+  "Educação",
+  "Cartão de crédito",
+  "Poupança",
+  "Outros"
+];
 
 export default function PersonalPage() {
   const { 
@@ -18,6 +32,27 @@ export default function PersonalPage() {
   const totalSummary = getTotalSummary();
   const summary = getPersonalSummary();
   const personalExpenses = filteredExpenses.filter(e => e.type === 'personal');
+
+  // Group expenses by category
+  const expensesByCategory = useMemo(() => {
+    const grouped: Record<string, typeof personalExpenses> = {};
+    personalCategories.forEach(cat => {
+      const catExpenses = personalExpenses.filter(e => e.category === cat);
+      if (catExpenses.length > 0) {
+        grouped[cat] = catExpenses;
+      }
+    });
+    // Add "Outros" for any uncategorized
+    const uncategorized = personalExpenses.filter(
+      e => !personalCategories.includes(e.category)
+    );
+    if (uncategorized.length > 0) {
+      grouped["Outros"] = [...(grouped["Outros"] || []), ...uncategorized];
+    }
+    return grouped;
+  }, [personalExpenses]);
+
+  const categoriesWithExpenses = Object.keys(expensesByCategory);
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
@@ -79,15 +114,60 @@ export default function PersonalPage() {
         />
       </div>
 
-      {/* Expenses Table */}
-      <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Despesas Pessoais</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-          <ExpenseTable expenses={personalExpenses} />
-        </CardContent>
-      </Card>
+      {/* Expenses by Category Tabs */}
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="w-full flex flex-wrap h-auto gap-1 p-1">
+          <TabsTrigger value="all" className="flex-shrink-0">
+            <span className="hidden sm:inline">Todas</span>
+            <span className="sm:hidden">Todas</span>
+            <span className="ml-1 text-xs opacity-70">({personalExpenses.length})</span>
+          </TabsTrigger>
+          {categoriesWithExpenses.map(category => (
+            <TabsTrigger key={category} value={category} className="flex-shrink-0">
+              <span className="text-xs sm:text-sm">{category}</span>
+              <span className="ml-1 text-xs opacity-70">({expensesByCategory[category].length})</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value="all">
+          <Card>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg flex items-center justify-between">
+                <span>Todas as Despesas</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    personalExpenses.reduce((sum, e) => sum + e.amount, 0)
+                  )}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <ExpenseTable expenses={personalExpenses} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {categoriesWithExpenses.map(category => (
+          <TabsContent key={category} value={category}>
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg flex items-center justify-between">
+                  <span>{category}</span>
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      expensesByCategory[category].reduce((sum, e) => sum + e.amount, 0)
+                    )}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <ExpenseTable expenses={expensesByCategory[category]} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }
