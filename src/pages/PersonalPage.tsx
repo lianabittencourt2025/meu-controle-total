@@ -8,17 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
 
-const personalCategories = [
-  "Moradia",
-  "Alimentação",
-  "Transporte",
-  "Saúde",
-  "Lazer",
-  "Educação",
-  "Cartão de crédito",
-  "Poupança",
-  "Outros"
-];
+const statusLabels: Record<string, string> = {
+  paid: "Pago",
+  unpaid: "A Pagar",
+  saved: "Guardado"
+};
 
 export default function PersonalPage() {
   const { 
@@ -33,26 +27,19 @@ export default function PersonalPage() {
   const summary = getPersonalSummary();
   const personalExpenses = filteredExpenses.filter(e => e.type === 'personal');
 
-  // Group expenses by category
-  const expensesByCategory = useMemo(() => {
+  // Group expenses by status
+  const expensesByStatus = useMemo(() => {
     const grouped: Record<string, typeof personalExpenses> = {};
-    personalCategories.forEach(cat => {
-      const catExpenses = personalExpenses.filter(e => e.category === cat);
-      if (catExpenses.length > 0) {
-        grouped[cat] = catExpenses;
+    Object.keys(statusLabels).forEach(status => {
+      const statusExpenses = personalExpenses.filter(e => e.status === status);
+      if (statusExpenses.length > 0) {
+        grouped[status] = statusExpenses;
       }
     });
-    // Add "Outros" for any uncategorized
-    const uncategorized = personalExpenses.filter(
-      e => !personalCategories.includes(e.category)
-    );
-    if (uncategorized.length > 0) {
-      grouped["Outros"] = [...(grouped["Outros"] || []), ...uncategorized];
-    }
     return grouped;
   }, [personalExpenses]);
 
-  const categoriesWithExpenses = Object.keys(expensesByCategory);
+  const statusesWithExpenses = Object.keys(expensesByStatus);
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in overflow-x-hidden">
@@ -114,18 +101,17 @@ export default function PersonalPage() {
         />
       </div>
 
-      {/* Expenses by Category Tabs */}
+      {/* Expenses by Status Tabs */}
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="w-full flex flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="all" className="flex-shrink-0">
-            <span className="hidden sm:inline">Todas</span>
-            <span className="sm:hidden">Todas</span>
+            <span>Todas</span>
             <span className="ml-1 text-xs opacity-70">({personalExpenses.length})</span>
           </TabsTrigger>
-          {categoriesWithExpenses.map(category => (
-            <TabsTrigger key={category} value={category} className="flex-shrink-0">
-              <span className="text-xs sm:text-sm">{category}</span>
-              <span className="ml-1 text-xs opacity-70">({expensesByCategory[category].length})</span>
+          {statusesWithExpenses.map(status => (
+            <TabsTrigger key={status} value={status} className="flex-shrink-0">
+              <span className="text-xs sm:text-sm">{statusLabels[status]}</span>
+              <span className="ml-1 text-xs opacity-70">({expensesByStatus[status].length})</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -148,21 +134,21 @@ export default function PersonalPage() {
           </Card>
         </TabsContent>
 
-        {categoriesWithExpenses.map(category => (
-          <TabsContent key={category} value={category}>
+        {statusesWithExpenses.map(status => (
+          <TabsContent key={status} value={status}>
             <Card>
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="text-base sm:text-lg flex items-center justify-between">
-                  <span>{category}</span>
+                  <span>{statusLabels[status]}</span>
                   <span className="text-sm font-normal text-muted-foreground">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                      expensesByCategory[category].reduce((sum, e) => sum + e.amount, 0)
+                      expensesByStatus[status].reduce((sum, e) => sum + e.amount, 0)
                     )}
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                <ExpenseTable expenses={expensesByCategory[category]} />
+                <ExpenseTable expenses={expensesByStatus[status]} />
               </CardContent>
             </Card>
           </TabsContent>
